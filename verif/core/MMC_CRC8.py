@@ -132,16 +132,25 @@ class MMC_CRC8:
     # then compare output monitor result with model result
     # This example might not work every time.
     async def _checker(self) -> None:
+        done = 0
         while True:
+            crc = 0
             # dummy await, allows to run without checker implementation and verify monitors
             # await cocotb.triggers.ClockCycles(self.dut.clk, 1000, rising=True)
-            actual = await self.output_mon.values.get()
-            SamplesList = []
-            while (not self.input_mon.values.empty()):
-                SamplesList.append(self.input_mon.values.get_nowait())
-            SignalSamples = [d['i_data'].integer for d in SamplesList]  # Extracting all input data signals.
-            SignalSamples.append(actual["crc"])  # Adding the received CRC data at the end of the list.
-            assert actual["match"] == self.model(SignalSamples)  # Compute and compare CRCs. Check match reliability.
+            if done == 0:
+                val = await self.input_mon.values.get() # Fetching input monitor for i_last
+                done = val["i_last"].integer
+                if done == 1:   # If i_last == 1
+                    val = self.output_mon.values.get_nowait()   # Fetching output monitor for crc
+                    crc = val["crc"]
+                    actual = await self.output_mon.values.get()
+                    SamplesList = []
+                    while (not self.input_mon.values.empty()):
+                        SamplesList.append(self.input_mon.values.get_nowait())
+                    SignalSamples = [d['i_data'].integer for d in SamplesList]  # Extracting all input data signals.
+                    SignalSamples.append(crc)  # Adding the received CRC data at the end of the list.
+                    assert actual["match"] == self.model(SignalSamples)  # Compute and compare CRCs. Check match reliability.
+
             """
             Récupérer toutes les valeurs dans une Queue:
                                 SamplesList = []
