@@ -11,6 +11,7 @@ from cocotb.handle import SimHandleBase
 from cocotb.queue import Queue
 from cocotb.triggers import RisingEdge
 from cocotb.log import SimLog
+from utilsVerif import get_expected_crc
 
 
 class DataValidMonitor_Template:
@@ -64,14 +65,14 @@ class DataValidMonitor_Template:
         Return value is what is stored in queue. Meant to be overriden by the user.
         """
         # possible messages to test monitor
-        self.log.info("use this to print some information at info level")
-        # self.log.info({name: handle.value for name, handle in self._datas.items()})
+        # self.log.info("use this to print some information at info level")
+        self.log.info({name: handle.value for name, handle in self._datas.items()})
 
         # for loop going through all the values in the signals to sample (see constructor)
         return {name: handle.value for name, handle in self._datas.items()}
 
 
-class MMC_Template:
+class MMC_CRC8:
     """
     Reusable checker of a checker instance
 
@@ -84,17 +85,17 @@ class MMC_Template:
         self.log = SimLog("cocotb.MMC.%s" % (type(self).__qualname__))
 
         self.input_mon = DataValidMonitor_Template(
-            clk=self.dut.clk_i,
-            valid=self.dut.valid,
-            datas=dict(SignalA=self.dut.i_SignalA,
-                       SignalB=self.dut.i_SignalB),
+            clk=self.dut.clk,
+            valid=self.dut.i_valid,
+            datas=dict(i_data=self.dut.i_data,
+                       i_last=self.dut.i_last),
         )
 
         self.output_mon = DataValidMonitor_Template(
-            clk=self.dut.clk_i,
-            valid=self.dut.done,
-            datas=dict(SignalC=self.dut.o_SignalC,
-                       SignalD=self.dut.o_SignalD)
+            clk=self.dut.clk,
+            valid=self.dut.o_done,
+            datas=dict(crc=self.dut.o_crc8,
+                       match=self.dut.o_match)
         )
 
         self._checkercoro = None
@@ -119,7 +120,13 @@ class MMC_Template:
     # Model, modify as needed.
     def model(self, echantillons):
         # equivalent model to HDL code
-        return False
+        crc = echantillons.pop(len(echantillons)-1).integer     # Remove the CRC from the list. Only data remains.
+        echantillons.pop(len(echantillons) - 1)     # Removing input CRC from data
+        crc_calc = get_expected_crc(echantillons)
+        if crc != crc_calc: # Compare the two CRCs
+            return False
+        else:
+            return True
 
     # Insert logic to decide when to check the model against the HDL result.
     # then compare output monitor result with model result
@@ -127,7 +134,14 @@ class MMC_Template:
     async def _checker(self) -> None:
         while True:
             # dummy await, allows to run without checker implementation and verify monitors
-            await cocotb.triggers.ClockCycles(self.dut.clk, 1000, rising=True)
+            # await cocotb.triggers.ClockCycles(self.dut.clk, 1000, rising=True)
+            actual = await self.output_mon.values.get()
+            SamplesList = []
+            while (not self.input_mon.values.empty()):
+                SamplesList.append(self.input_mon.values.get_nowait())
+            SignalSamples = [d['i_data'].integer for d in SamplesList]  # Extracting all input data signals.
+            SignalSamples.append(actual["crc"])  # Adding the received CRC data at the end of the list.
+            assert actual["match"] == self.model(SignalSamples)  # Compute and compare CRCs. Check match reliability.
             """
             Récupérer toutes les valeurs dans une Queue:
                                 SamplesList = []
