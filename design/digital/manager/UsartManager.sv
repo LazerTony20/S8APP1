@@ -24,7 +24,7 @@ module UsartManager
     ) /* synthesis syn_noprune=1 */;
     
     // States for the differents status
-    typedef enum logic [2:0] {STATE_WAIT, STATE_READ, STATE_SEND, STATE_SEND_NACK, STATE_END} states;
+    typedef enum logic [2:0] {STATE_WAIT, STATE_READ, STATE_SEND, STATE_SEND_NACK, STATE_WAIT_FRAME, STATE_END} states;
 
     states state;
 
@@ -66,18 +66,16 @@ module UsartManager
                 message.packet = _rx_reader.data;
 
                 // Check if an error has occured
-                state = _rx_reader.parity_error ? STATE_SEND_NACK : STATE_END;
+                state = _rx_reader.parity_error ? STATE_SEND_NACK : STATE_WAIT_FRAME;
             end
 
             STATE_SEND : begin
                 tx_data_r = _manager.tx_data;
                 tx_valid_r = 1;
-                data_sent_r = 0;
                 // Wait for transmission to start
                 if (!_tx_writer.ready) begin
                     //tx_valid_r = 0;
-                    data_sent_r = 1;
-                    state = STATE_END; 
+                    state = STATE_WAIT_FRAME;
                 end
             end
             
@@ -85,17 +83,24 @@ module UsartManager
             STATE_SEND_NACK : begin
                 tx_valid_r = 1;
                 tx_data_r = c_Nack;
-                state = STATE_END;
+                state = STATE_WAIT_FRAME;
             end
 
-            STATE_END : begin
+            STATE_WAIT_FRAME : begin
                 //rx_ready_r = 0;
                 packet_received_r = 0;
                 tx_valid_r = 0;
                 // Wait for tx to be ready before changing state (or we could read while tx not ready)
                 if(_tx_writer.ready) begin
                     // Notify command manager that data_was sent
-                    data_sent_r = 0;
+                    data_sent_r = 1;
+                    state = STATE_END;
+                end
+            end
+
+            STATE_END : begin
+                data_sent_r = 0;
+                if(!data_sent_r) begin
                     state = STATE_WAIT;
                 end
             end

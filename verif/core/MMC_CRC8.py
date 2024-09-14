@@ -64,9 +64,9 @@ class DataValidMonitor_Template:
 
         Return value is what is stored in queue. Meant to be overriden by the user.
         """
-        # possible messages to test monitor
+        # possible messages to test monitor [DEBUG]
         # self.log.info("use this to print some information at info level")
-        self.log.info({name: handle.value for name, handle in self._datas.items()})
+        # self.log.info({name: handle.value for name, handle in self._datas.items()})
 
         # for loop going through all the values in the signals to sample (see constructor)
         return {name: handle.value for name, handle in self._datas.items()}
@@ -88,14 +88,13 @@ class MMC_CRC8:
             clk=self.dut.clk,
             valid=self.dut.i_valid,
             datas=dict(i_data=self.dut.i_data,
-                       i_last=self.dut.i_last),
+                       i_last=self.dut.i_last,)
         )
 
         self.output_mon = DataValidMonitor_Template(
             clk=self.dut.clk,
             valid=self.dut.o_done,
-            datas=dict(crc=self.dut.o_crc8,
-                       match=self.dut.o_match)
+            datas=dict(match=self.dut.o_match)
         )
 
         self._checkercoro = None
@@ -120,7 +119,7 @@ class MMC_CRC8:
     # Model, modify as needed.
     def model(self, echantillons):
         # equivalent model to HDL code
-        crc = echantillons.pop(len(echantillons)-1).integer     # Remove the CRC from the list. Only data remains.
+        crc = echantillons.pop(len(echantillons)-1)     # Remove the CRC from the list. Only data remains.
         echantillons.pop(len(echantillons) - 1)     # Removing input CRC from data
         crc_calc = get_expected_crc(echantillons)
         if crc != crc_calc: # Compare the two CRCs
@@ -132,25 +131,18 @@ class MMC_CRC8:
     # then compare output monitor result with model result
     # This example might not work every time.
     async def _checker(self) -> None:
-        done = 0
+        SignalSamples = []
         while True:
-            crc = 0
             # dummy await, allows to run without checker implementation and verify monitors
             # await cocotb.triggers.ClockCycles(self.dut.clk, 1000, rising=True)
-            if done == 0:
-                val = await self.input_mon.values.get() # Fetching input monitor for i_last
-                done = val["i_last"].integer
-                if done == 1:   # If i_last == 1
-                    val = self.output_mon.values.get_nowait()   # Fetching output monitor for crc
-                    crc = val["crc"]
-                    actual = await self.output_mon.values.get()
-                    SamplesList = []
-                    while (not self.input_mon.values.empty()):
-                        SamplesList.append(self.input_mon.values.get_nowait())
-                    SignalSamples = [d['i_data'].integer for d in SamplesList]  # Extracting all input data signals.
-                    SignalSamples.append(crc)  # Adding the received CRC data at the end of the list.
-                    assert actual["match"] == self.model(SignalSamples)  # Compute and compare CRCs. Check match reliability.
-
+            val = await self.input_mon.values.get() # Fetching input monitor for i_last
+            SignalSamples.append(val["i_data"].integer)
+            if(val["i_last"] == 1):
+                crc = self.dut.o_crc8.value.integer # Manually fetching CRC while i_last == 1
+                SignalSamples.append(crc)
+                actual = await self.output_mon.values.get() # Fetching the output monitor for o_match.
+                assert actual["match"] == self.model(SignalSamples)  # Compute and compare CRCs. Check match reliability.
+                SignalSamples = []  # Reset the list.
             """
             Récupérer toutes les valeurs dans une Queue:
                                 SamplesList = []

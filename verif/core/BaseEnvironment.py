@@ -6,6 +6,9 @@ from cocotbext.uart import UartSource, UartSink
 from utilsVerif import build_command_message, get_expected_crc, print_cocotb_BinaryValue
 from cocotb.log import SimLog
 from MMC_CRC8 import MMC_CRC8
+import os
+import pydevd_pycharm
+
 class BaseEnvironment:
     UART_DATA_MASK = 0x0000FFFFFFFF
     UART_CRC_MASK  = 0xFFFF00000000
@@ -14,6 +17,14 @@ class BaseEnvironment:
         self._MMC = self._init_MMC(dut)
     # Operations methods:
     async def start(self):
+        print("Uart instance demo")
+        # Starting local debug server
+        PYCHARMDEBUG = os.environ.get('PYCHARMDEBUG')
+
+        print(PYCHARMDEBUG)
+
+        # if (PYCHARMDEBUG == "enabled"):
+        pydevd_pycharm.settrace('localhost', port=9696, stdoutToServer=True, stderrToServer=True)
         await self._init_signals()    # Initialize the bench signals.
         self._run_MMC()         # Run all MMCs.
 
@@ -68,7 +79,7 @@ class BaseEnvironment:
         # Start thread for the reply function for the expected UART response.
         Task_returnMessage = await cocotb.start(self._wait_reply(uart_sink, data))
         # [DEBUG] Print cocotb value demo function. Uncomment if desired.
-        print_cocotb_BinaryValue(packet_binary)
+        # print_cocotb_BinaryValue(packet_binary)
         # Send packet, then wait for transaction to complete
         await uart_driver.write(packet_binary.buff)
         await uart_driver.wait()
@@ -112,7 +123,7 @@ class BaseEnvironment:
         # Driver and Sink for the dut UART RX/TX channels.
         uart_driver = UartSource(self._dut.in_sig, baud=1000000, bits=8)
         # [DEBUG] Print cocotb value demo function. Uncomment if desired.
-        print_cocotb_BinaryValue(packet_binary)
+        # print_cocotb_BinaryValue(packet_binary)
         # Send packet, then wait for transaction to complete
         await uart_driver.write(packet_binary.buff)
         await uart_driver.wait()

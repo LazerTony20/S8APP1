@@ -7,7 +7,14 @@ class Test1(BaseEnvironment):
 
     async def test(self):
         await BaseEnvironment.start(self)
-        await BaseEnvironment.read_Register(self, addr=0x9, expected_data=0xBADEFACE)
+        await BaseEnvironment.read_Register(self, addr=0x9, expected_data=0xBADEFACE)   #Lecture du numéro de série.
+        """
+        for i in range(8):  #Lecture de tous les registres
+            await BaseEnvironment.read_Register(self, addr=i, expected_data=0x0)
+        for i in range(8):  #Écriture de tous les registres
+            await BaseEnvironment.write_Register(self, addr=i, data=0xFFFF1111)
+        """
+
 
 @cocotb.test()
 async def tests(dut):

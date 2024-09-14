@@ -11,9 +11,10 @@
 
 
 bind Registers RegisterBankCoverage u_RegisterBankCoverage(
-	.cov_reset(rstn),
+	.cov_reset(reset),
 	.cov_clk(clk),
 	.cov_writeEnable(writeEnable),
+	.cov_writeAck(writeAck),
 	.cov_readEnable(readEnable),
 	.cov_address(address)
 	);
@@ -25,6 +26,7 @@ module RegisterBankCoverage
 	input logic cov_clk,
     input logic cov_writeEnable,
     input logic cov_readEnable,
+    input logic cov_writeAck,
     input logic [7:0] cov_address
 	);
 
@@ -39,21 +41,27 @@ ast_read_strobe_once : assert property(p_read_strobe_once);
 cov_read_strobe_once : cover property(p_read_strobe_once);
 
 // Check that write strobes only 1 clock
-property p_write_strobe_once;
-	$rose(cov_writeEnable) |=> $fell(cov_writeEnable);
+property p_write_ack_twice;
+	$rose(cov_writeAck) |=> cov_writeAck ##1 $fell(cov_writeAck);
 endproperty
-ast_write_strobe_once : assert property(p_write_strobe_once);
-cov_wrote_strobe_once : cover property(p_write_strobe_once);
+ast_write_ack_twice : assert property(p_write_ack_twice);
+cov_write_ack_twice : cover property(p_write_ack_twice);
 
 // cover group: log if read and write access occured for all
 // documented register address
 // Lab: this covergroup will not work properly. Explore why and update.
 covergroup covg_RegisterAccess
-    @(posedge cov_clk iff cov_reset);
+    @(negedge cov_clk && (cov_readEnable || cov_writeEnable) iff !cov_reset) ;
 	option.name		= "cov_RegisterAccess";
-    readMode       : coverpoint cov_readEnable;
-    writeMode     : coverpoint cov_writeEnable;
-    addressSpace  : coverpoint cov_address;
+    readMode       : coverpoint cov_readEnable {
+        bins b = {1};
+    }
+    writeMode     : coverpoint cov_writeEnable {
+        bins b = {1};
+    }
+    addressSpace  : coverpoint cov_address {
+        bins b [] = {0,1,2,3,4,5,6,7,8,9};
+    }
 endgroup
 
 covg_RegisterAccess cov_userifCover = new();
