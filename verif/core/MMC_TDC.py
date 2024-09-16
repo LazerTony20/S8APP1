@@ -52,8 +52,9 @@ class MMC_TDC:
     # Model, modify as needed.
     def model(self, pulseWidth):
         # equivalent model to HDL code
-
-        return True
+        if pulseWidth > 5000:
+            pulseWidth = 5000
+        return pulseWidth
 
     # Insert logic to decide when to check the model against the HDL result.
     # then compare output monitor result with model result
@@ -72,7 +73,7 @@ class MMC_TDC:
                 if val["trigger"].integer == 1 + timestamp:  # Detect trigger rising edge.
                     timestamp = clk_count * TIMEFACTOR
                 if (val["trigger"].integer == pulse_width) and timestamp:  # Detect trigger falling edge.
-                    pulse_width = (clk_count * TIMEFACTOR) - timestamp
+                    pulse_width = self.model((clk_count * TIMEFACTOR) - timestamp)
                     val2 = await self.output_mon.values.get()
                     rec_timestamp = (val2["timestamp"].integer * 40) / 1000
                     rec_pulse_width = (val2["pulseWidth"].integer * 40) / 1000

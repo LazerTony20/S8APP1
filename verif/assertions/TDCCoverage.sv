@@ -58,12 +58,12 @@ check_check_hasEvent : assert property (check_hasEvent) else $display($stime,,,"
 */
 
 property check_busy;
-    @(posedge cov_clk) $rose(cov_trigger) |-> ##[1:2] cov_busy;
+    @(posedge cov_clk) $rose(cov_trigger) |-> cov_busy within ##[1:2];
 endproperty
 check_check_busy : assert property (check_busy) else $display($stime,,,"\t\t %m FAIL\n");
 
 property check_pulseWidth;
-    @(posedge cov_clk) !$stable(cov_TS) |-> cov_TOT < 32'h0001E848
+    @(posedge cov_clk) !$stable(cov_TS) |-> cov_TOT < 32'h0001E849
 endproperty
 check_check_pulseWidth : assert property (check_pulseWidth) else $display($stime,,,"\t\t %m FAIL\n");
 

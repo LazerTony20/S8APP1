@@ -70,23 +70,36 @@ covg_RegisterAccess cov_userifCover = new();
 
 // TESTS SVA
 
+// TODO
 // Reset - Au prochain coup de clk, writeAck devient 0 et readData devient 0
 property reset_writeack_readdata;
-    @(posedge cov_clk) $fell(cov_last)|-> ##[1:2] cov_done == 1;
+    // readData PAS DANS LES SIGNAUX DE CE FICHIER
+    @(posedge cov_clk) $rose(cov_reset) |=> cov_writeAck == 0;
 endproperty
 reset_writeack_readdata_check: assert property(reset_writeack_readdata) 
-  else $display($stime,,,"\t\tLAST DONE CHECK FAIL:: DONE DIDN'T RISE TO A VALUE OF 1 \n");
+  else $display($stime,,,"\t\tRESET WRITEACK AND READDATA FAIL:: WriteAck and readData weren't zeroed at reset \n");
 
+// writeEnable reste 1 tant que writeACK reste 0
+property writeEnable_one_writeACK_zero;
+    @(posedge cov_clk) cov_writeEnable == 1 |-> $stable(cov_writeAck) && cov_writeAck == 0;
+endproperty
+writeEnable_one_writeACK_zero_check: assert property(writeEnable_one_writeACK_zero) 
+  else $display($stime,,,"\t\tWRITEENABLE WRITEACK FAIL:: The value of writeEnable changed to not(1) while writeAck was stable at 0\n");
 
+// changement de readData 1 clk après readEnable
+/*
+property readData_after_readEnable;
+    @(posedge cov_clk) cov_readEnable == 1 |=> ##1 !$stable(cov_readData);
+endproperty
+readData_after_readEnable_check: assert property(readData_after_readEnable) 
+  else $display($stime,,,"\t\tWRITEENABLE WRITEACK FAIL:: The value of writeEnable changed to not(1) while writeAck was stable at 0\n");
+*/
 
+// AUTRE
 
-ssss
+// Vérifier la présence de writeData et address
 
-
-
-
-
-
+// writeACK devient 1 pour 2 clk
 
 
 endmodule

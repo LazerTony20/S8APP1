@@ -8,7 +8,7 @@ class Test1(BaseEnvironment):
     async def test(self):
         await BaseEnvironment.start(self)
         await BaseEnvironment.read_Register(self, addr=0x9, expected_data=0xBADEFACE)   #Lecture du numéro de série.
-        await BaseEnvironment.sendPulse(self,10,501)   # The two channels are tested at the same time.
+        await BaseEnvironment.sendPulse(self,10,750)   # The two channels are tested at the same time.
 
         """
         for i in range(8):  #Lecture de tous les registres
