@@ -13,7 +13,7 @@
 # set defaults
 set batch=""
 set waves=""
-
+values
 if (! $?BRUN_TEST_NAME) then
   echo "BRUN variables are undefined"
   exit 1

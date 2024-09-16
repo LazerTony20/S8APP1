@@ -68,5 +68,25 @@ covg_RegisterAccess cov_userifCover = new();
 
 
 
+// TESTS SVA
+
+// Reset - Au prochain coup de clk, writeAck devient 0 et readData devient 0
+property reset_writeack_readdata;
+    @(posedge cov_clk) $fell(cov_last)|-> ##[1:2] cov_done == 1;
+endproperty
+reset_writeack_readdata_check: assert property(reset_writeack_readdata) 
+  else $display($stime,,,"\t\tLAST DONE CHECK FAIL:: DONE DIDN'T RISE TO A VALUE OF 1 \n");
+
+
+
+
+ssss
+
+
+
+
+
+
+
 
 endmodule

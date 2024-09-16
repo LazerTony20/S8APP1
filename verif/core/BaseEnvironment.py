@@ -6,6 +6,7 @@ from cocotbext.uart import UartSource, UartSink
 from utilsVerif import build_command_message, get_expected_crc, print_cocotb_BinaryValue
 from cocotb.log import SimLog
 from MMC_CRC8 import MMC_CRC8
+from MMC_TDC import MMC_TDC
 import os
 import pydevd_pycharm
 
@@ -39,14 +40,20 @@ class BaseEnvironment:
         await cocotb.start(Clock(self._dut.clk, 10, units='ns').start())
         # set a signal to some value
         self._dut.reset.value = 1
+        self._dut.inst_tdc_channel_1.reset.value = 1
         self._dut.in_sig.value = 1
         self._dut.clkMHz.value = 1
         self._dut.resetCyclic.value = 1
+        self._dut.inst_tdc_channel_0.i_enable_channel.value = 0
+        self._dut.inst_tdc_channel_1.i_enable_channel.value = 0
+        self._dut.inst_tdc_channel_0.i_trigger.value = 0
         # wait for 100 clock periods
         await cocotb.triggers.ClockCycles(self._dut.clk, 100, rising=True)
     def _init_MMC(self, dut):
         MMCs = []
         MMCs.append(MMC_CRC8(dut.inst_packet_merger.inst_crc_calc))
+        MMCs.append(MMC_TDC(dut.inst_tdc_channel_0))
+        #MMCs.append(MMC_TDC(dut.inst_tdc_channel_1))
         # Add other MMCs to add to list here
         return MMCs
 
@@ -145,3 +152,14 @@ class BaseEnvironment:
         crc = get_expected_crc(message.buff)
         packet = message.integer + (crc << 48)
         return cocotb.binary.BinaryValue(value=packet, n_bits=56, bigEndian=False)
+    async def sendPulse(self, start_delay, length_clk):
+        self._dut.inst_tdc_channel_1.reset.value = 0
+        await cocotb.triggers.ClockCycles(self._dut.clk, start_delay, rising=True)  # Arbitrary amount of time waiting.
+        self._dut.inst_tdc_channel_0.i_enable_channel.value = 1
+        self._dut.inst_tdc_channel_1.i_enable_channel.value = 1
+        self._dut.inst_tdc_channel_0.i_trigger.value = 1
+        self._dut.inst_tdc_channel_1.i_trigger.value = 1
+        await cocotb.triggers.ClockCycles(self._dut.clk, length_clk, rising=True)
+        self._dut.inst_tdc_channel_0.i_trigger.value = 0
+        self._dut.inst_tdc_channel_1.i_trigger.value = 0
+        await cocotb.triggers.ClockCycles(self._dut.clk, 230, rising=True)   # Arbitrary amount of time waiting.

@@ -35,4 +35,48 @@ module TDCCoverage
 default clocking DEFCLK @(posedge cov_clk);
 endclocking
 
+property check_reset;
+    @(posedge cov_clk) cov_reset |-> (cov_busy == 0) && (cov_hasEvent == 0) && ((cov_TOT === 32'h0) || (cov_TOT === 32'hxxxxxxxx)) && ((cov_TS === 32'h0) || (cov_TS === 32'hxxxxxxxx));
+endproperty
+preqGnt: assert property (check_reset) else $display($stime,,,"\t\t %m FAIL");
+
+property check_enable;
+    @(posedge cov_clk) ##2 $rose(cov_reset) |=> $rose(cov_enable);
+endproperty
+assert property (check_enable) else $display($stime,,,"\t\t %m FAIL");
+
+/* TODO: régler le F*CKING problème de fenêtre de ##[1:200]
+sequence check_event_window;
+    ##[1:200] cov_hasEvent;
+endsequence
+
+
+property check_hasEvent;
+    @(posedge cov_clk) $fell(cov_trigger) |-> check_event_window;
+endproperty
+check_check_hasEvent : assert property (check_hasEvent) else $display($stime,,,"\t\t %m FAIL\n");
+*/
+
+property check_busy;
+    @(posedge cov_clk) $rose(cov_trigger) |-> ##[1:2] cov_busy;
+endproperty
+check_check_busy : assert property (check_busy) else $display($stime,,,"\t\t %m FAIL\n");
+
+property check_pulseWidth;
+    @(posedge cov_clk) !$stable(cov_TS) |-> cov_TOT < 32'h0001E848
+endproperty
+check_check_pulseWidth : assert property (check_pulseWidth) else $display($stime,,,"\t\t %m FAIL\n");
+
+property check_timestamp;
+    @(posedge cov_clk) !$stable(cov_TS) |-> cov_TS < 32'hFFFFFFFF
+endproperty
+check_check_timestamp : assert property (check_timestamp) else $display($stime,,,"\t\t %m FAIL\n");
+
+property check_clear;
+    @(posedge cov_clk) cov_clear |=> cov_hasEvent == 0
+endproperty
+check_check_clear : assert property (check_clear) else $display($stime,,,"\t\t %m FAIL\n");
+
+//On a pas le signal o_channel_ID...
+
 endmodule
