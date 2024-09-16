@@ -38,13 +38,13 @@ endclocking
 covergroup covg_TDC
     @(negedge cov_clk && (cov_readEnable || cov_writeEnable) iff !cov_reset) ;
 	option.name		= "cov_TDC";
-    busy        : coverpoint cov_busy
-    clear       : coverpoint cov_clear
-    trigger     : coverpoint cov_trigger
-    enable      : coverpoint cov_enable
-    hasEvent    : coverpoint cov_hasEvent
-    pulseWidth  : coverpoint cov_TOT
-    timestamp   : coverpoint cov_TS
+    busy        : coverpoint cov_busy;
+    clear       : coverpoint cov_clear;
+    trigger     : coverpoint cov_trigger;
+    enable      : coverpoint cov_enable;
+    hasEvent    : coverpoint cov_hasEvent;
+    pulseWidth  : coverpoint cov_TOT;
+    timestamp   : coverpoint cov_TS;
 endgroup
 
 property check_reset;
