@@ -36,7 +36,7 @@ default clocking DEFCLK @(posedge cov_clk);
 endclocking
 
 covergroup covg_TDC
-    @(negedge cov_clk && (cov_readEnable || cov_writeEnable) iff !cov_reset) ;
+    @(posedge cov_clk) ;
 	option.name		= "cov_TDC";
     busy        : coverpoint cov_busy;
     clear       : coverpoint cov_clear;
