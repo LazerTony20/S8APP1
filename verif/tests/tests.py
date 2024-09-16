@@ -10,7 +10,6 @@ class Test1(BaseEnvironment):
         r_pulse = random.randrange(1000)
         await BaseEnvironment.start(self)
          # RB 4.1
-        
         liste_reg_def_values = [0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xBADEFACE]
         for i in range(10):
             await BaseEnvironment.read_Register(self, addr=i, expected_data=liste_reg_def_values[i])
