@@ -9,16 +9,28 @@ class Test1(BaseEnvironment):
     async def test(self):
         r_pulse = random.randrange(1000)
         await BaseEnvironment.start(self)
+        
          # RB 4.1
         liste_reg_def_values = [0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xBADEFACE]
         for i in range(10):
             await BaseEnvironment.read_Register(self, addr=i, expected_data=liste_reg_def_values[i])
+        
         # RB.4.3
         await BaseEnvironment.read_Register(self, addr=0x9, expected_data=0xBADEFACE)
+        
+        # RB 4.4
+        liste_sent_values = [0x3,0x3,0x1,0x1,0xFFFFFFFF,0x1,0x1,0x1,0xFFFF,0xFFFFFFFF]
+        liste_expected_values = [0x3,0x3,0x1,0x1,0xFFFFFFFF,0x1,0x0,0x0,0xFFFF,0xBADEFACE]
+        for i in range(10):
+            await BaseEnvironment.write_Register(self, addr=i, data=liste_sent_values[i])
+            await BaseEnvironment.read_Register(self, addr=i, expected_data=liste_expected_values[i])
+
         # TDC.7.3
         await BaseEnvironment.sendPulse(self,10,750)
+        
         # TDC.7.4
         await BaseEnvironment.sendPulse(self, 10, r_pulse)
+        
         # TDC.11
         await BaseEnvironment.sendPulse(self, 10, 10)
         await BaseEnvironment.sendPulse(self, 1, 4) # Pulse to be ignored
