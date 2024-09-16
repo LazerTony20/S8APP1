@@ -25,7 +25,10 @@ class BaseEnvironment:
         print(PYCHARMDEBUG)
 
         # if (PYCHARMDEBUG == "enabled"):
-        pydevd_pycharm.settrace('localhost', port=9696, stdoutToServer=True, stderrToServer=True)
+        if os.environ.get('USER') == 'roya2019':
+            pydevd_pycharm.settrace('localhost', port=6969, stdoutToServer=True, stderrToServer=True)
+        else:
+            pydevd_pycharm.settrace('localhost', port=9696, stdoutToServer=True, stderrToServer=True)
         await self._init_signals()    # Initialize the bench signals.
         self._run_MMC()         # Run all MMCs.
 
