@@ -45,7 +45,6 @@ covergroup covg_TDC
     hasEvent    : coverpoint cov_hasEvent
     pulseWidth  : coverpoint cov_TOT
     timestamp   : coverpoint cov_TS
-    }
 endgroup
 
 property check_reset;
