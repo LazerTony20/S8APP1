@@ -10,19 +10,25 @@ class Test1(BaseEnvironment):
         r_pulse = random.randrange(1000)
         await BaseEnvironment.start(self)
         
-         # RB 4.1
+        # RB 4.1
+        print("RB 4.1")
         liste_reg_def_values = [0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xBADEFACE]
         for i in range(10):
+            print("Reading value in register no " + str(i) + "\n")
             await BaseEnvironment.read_Register(self, addr=i, expected_data=liste_reg_def_values[i])
         
         # RB.4.3
+        print("RB 4.3")
         await BaseEnvironment.read_Register(self, addr=0x9, expected_data=0xBADEFACE)
         
         # RB 4.4
+        print("RB 4.4")
         liste_sent_values = [0x3,0x3,0x1,0x1,0xFFFFFFFF,0x1,0x1,0x1,0xFFFF,0xFFFFFFFF]
         liste_expected_values = [0x3,0x3,0x1,0x1,0xFFFFFFFF,0x1,0x0,0x0,0xFFFF,0xBADEFACE]
         for i in range(10):
+            print("Sending value " + str(liste_sent_values[i]) + " in register no " + str(i) + "\n")
             await BaseEnvironment.write_Register(self, addr=i, data=liste_sent_values[i])
+            print("Reading value in register no " + str(i) + "\n")
             await BaseEnvironment.read_Register(self, addr=i, expected_data=liste_expected_values[i])
 
         # TDC.7.3
