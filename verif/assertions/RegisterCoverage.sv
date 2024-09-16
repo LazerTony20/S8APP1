@@ -81,7 +81,7 @@ reset_writeack_readdata_check: assert property(reset_writeack_readdata)
 
 // writeEnable reste 1 tant que writeACK reste 0
 property writeEnable_one_writeACK_zero;
-    @(posedge cov_clk) cov_writeEnable == 1 |-> $stable(cov_writeAck) && cov_writeAck == 0;
+    @(posedge cov_clk) cov_writeEnable == 1 |-> $past(cov_writeAck,1) == 0;
 endproperty
 writeEnable_one_writeACK_zero_check: assert property(writeEnable_one_writeACK_zero) 
   else $display($stime,,,"\t\tWRITEENABLE WRITEACK FAIL:: The value of writeEnable changed to not(1) while writeAck was stable at 0\n");
@@ -100,6 +100,11 @@ readData_after_readEnable_check: assert property(readData_after_readEnable)
 // Vérifier la présence de writeData et address
 
 // writeACK devient 1 pour 2 clk
+property writeEnable_one_writeACK_2clk;
+    @(posedge cov_clk) $rose(cov_writeAck) && cov_writeEnable == 1 |->  ##[1:2] cov_writeAck == 1;
+endproperty
+writeEnable_one_writeACK_2clk_check: assert property(writeEnable_one_writeACK_2clk) 
+  else $display($stime,,,"\t\tWRITEENABLE WRITEACK FAIL:: The value of writeEnable changed to not(1) while writeAck was stable at 0\n");
 
 
 endmodule
