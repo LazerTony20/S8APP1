@@ -103,6 +103,7 @@ readData_after_readEnable_check: assert property(readData_after_readEnable)
 property writeEnable_one_writeACK_2clk;
     @(posedge cov_clk) $rose(cov_writeAck) && cov_writeEnable == 1 |->  ##[1:2] cov_writeAck == 1;
 endproperty
+cover_writeEnable_one_writeACK_2clk: cover property(writeEnable_one_writeACK_2clk);
 writeEnable_one_writeACK_2clk_check: assert property(writeEnable_one_writeACK_2clk) 
   else $display($stime,,,"\t\tWRITEENABLE WRITEACK FAIL:: The value of writeEnable changed to not(1) while writeAck was stable at 0\n");
 
