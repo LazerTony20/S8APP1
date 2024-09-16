@@ -66,16 +66,13 @@ endgroup
 
 covg_RegisterAccess cov_userifCover = new();
 
-
-
-// TESTS SVA
-
-// TODO
 // Reset - Au prochain coup de clk, writeAck devient 0 et readData devient 0
 property reset_writeack_readdata;
     // readData PAS DANS LES SIGNAUX DE CE FICHIER
     @(posedge cov_clk) $rose(cov_reset) |=> cov_writeAck == 0;
+    //@(posedge cov_clk) $rose(cov_reset) |=> cov_writeAck == 0 && cov_readData == 32'b0;
 endproperty
+cover_reset_writeack_readData: cover property(reset_writeack_readdata);
 reset_writeack_readdata_check: assert property(reset_writeack_readdata) 
   else $display($stime,,,"\t\tRESET WRITEACK AND READDATA FAIL:: WriteAck and readData weren't zeroed at reset \n");
 
@@ -83,21 +80,18 @@ reset_writeack_readdata_check: assert property(reset_writeack_readdata)
 property writeEnable_one_writeACK_zero;
     @(posedge cov_clk) cov_writeEnable == 1 |-> $past(cov_writeAck,1) == 0;
 endproperty
+cover_writeEnable_one_writeACK_zero: cover property(writeEnable_one_writeACK_zero);
 writeEnable_one_writeACK_zero_check: assert property(writeEnable_one_writeACK_zero) 
   else $display($stime,,,"\t\tWRITEENABLE WRITEACK FAIL:: The value of writeEnable changed to not(1) while writeAck was stable at 0\n");
 
 // changement de readData 1 clk après readEnable
-/*
+/* SIGNAL MANQUANT
 property readData_after_readEnable;
     @(posedge cov_clk) cov_readEnable == 1 |=> ##1 !$stable(cov_readData);
 endproperty
 readData_after_readEnable_check: assert property(readData_after_readEnable) 
   else $display($stime,,,"\t\tWRITEENABLE WRITEACK FAIL:: The value of writeEnable changed to not(1) while writeAck was stable at 0\n");
 */
-
-// AUTRE
-
-// Vérifier la présence de writeData et address
 
 // writeACK devient 1 pour 2 clk
 property writeEnable_one_writeACK_2clk;
@@ -107,5 +101,8 @@ cover_writeEnable_one_writeACK_2clk: cover property(writeEnable_one_writeACK_2cl
 writeEnable_one_writeACK_2clk_check: assert property(writeEnable_one_writeACK_2clk) 
   else $display($stime,,,"\t\tWRITEENABLE WRITEACK FAIL:: The value of writeEnable changed to not(1) while writeAck was stable at 0\n");
 
+// Endroit pour le test RB.2.1
+// Vérifier la présence de writeData et address
+// MANQUE DES SIGNAUX DONC IGNORÉ
 
 endmodule
