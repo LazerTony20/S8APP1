@@ -56,9 +56,9 @@ property check_hasEvent;
 endproperty
 check_check_hasEvent : assert property (check_hasEvent) else $display($stime,,,"\t\t %m FAIL\n");
 */
-
+// TODO bug bizare avec ##[1:2]
 property check_busy;
-    @(posedge cov_clk) $rose(cov_trigger) |-> cov_busy within ##[1:2];
+    @(posedge cov_clk) $rose(cov_trigger) |-> ##[1:2] cov_busy;
 endproperty
 check_check_busy : assert property (check_busy) else $display($stime,,,"\t\t %m FAIL\n");
 

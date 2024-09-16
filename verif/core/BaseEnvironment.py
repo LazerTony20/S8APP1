@@ -152,6 +152,8 @@ class BaseEnvironment:
         crc = get_expected_crc(message.buff)
         packet = message.integer + (crc << 48)
         return cocotb.binary.BinaryValue(value=packet, n_bits=56, bigEndian=False)
+    async def waitClk(self, n_clk):
+        await cocotb.triggers.ClockCycles(self._dut.clk, n_clk, rising=True)
     async def sendPulse(self, start_delay, length_clk):
         self._dut.inst_tdc_channel_1.reset.value = 0
         await cocotb.triggers.ClockCycles(self._dut.clk, start_delay, rising=True)  # Arbitrary amount of time waiting.
@@ -162,4 +164,4 @@ class BaseEnvironment:
         await cocotb.triggers.ClockCycles(self._dut.clk, length_clk, rising=True)
         self._dut.inst_tdc_channel_0.i_trigger.value = 0
         self._dut.inst_tdc_channel_1.i_trigger.value = 0
-        await cocotb.triggers.ClockCycles(self._dut.clk, 230, rising=True)   # Arbitrary amount of time waiting.
+        #await cocotb.triggers.ClockCycles(self._dut.clk, 230, rising=True)   # Arbitrary amount of time waiting.
