@@ -144,7 +144,7 @@ class BaseEnvironment:
         return data & mask
 
     def _validate_Data(seld, expected_value, received_value):
-        if (expected_value != received_value):
+        if (expected_value == received_value):
             logger = SimLog("cocotb.Test")
             logger.info("Recieved value is not equal to expected value")
         else:
