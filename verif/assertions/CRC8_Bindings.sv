@@ -43,7 +43,8 @@ default clocking DEFCLK @(posedge cov_clk);
 endclocking
 
 // ====== Lab 3 ======
-/* THIS TEST IS A REAL ONE. IT HAS BEEN COMMENTED ONLY TO CLEAR UP THE LOGS. WE KNOW THIS TEST FINDS A PROBLEM IN THE IMPLEMENTATION.
+// TODO DÉCOMMENTER
+/* THIS TEST IS A REAL ONE. IT HAS BEEN COMMENTED ONLY TO CLEAR UP THE LOGS. WE KNOW THIS TEST FINDS AN ACTUAL PROBLEM IN THE IMPLEMENTATION.
 // Last implique que done montera à 1 après 1 ou 2 coups d’horloge.
 property last_done;
     @(posedge cov_clk) $fell(cov_last)|-> ##[1:2] cov_done == 1;
@@ -67,6 +68,7 @@ match_last_check: assert property(match_last)
   else $display($stime,,,"\t\MATCH LAST CHECK FAIL:: LAST WASN'T 1 IN THE LAST 1 OR 2 CLOCK CYCLE BEFORE MATCH = 1\n");
 
 /*THIS TEST IS A REAL ONE. IT HAS BEEN COMMENTED ONLY TO CLEAR UP THE LOGS. WE KNOW THIS TEST FINDS A PROBLEM IN THE IMPLEMENTATION.
+//TODO DÉCOMMENTER
 // La valeur de CRC ne change pas si valid vaut 0.
 property crc_static_valid_zero;
     @(posedge cov_clk) disable iff(!cov_reset) cov_valid == 0 |=> $stable(cov_crc8);
@@ -100,7 +102,7 @@ o_done_reset_check: assert property(o_done_reset)
 
 
 /* THIS TEST IS A REAL ONE. IT HAS BEEN COMMENTED ONLY TO CLEAR UP THE LOGS. WE KNOW THIS TEST FINDS A PROBLEM IN THE IMPLEMENTATION.
-
+// TODO DÉCOMMENTER
 // i_last toujours en meme temps que valid
 property i_last_valid;
     @(posedge cov_clk) cov_last |-> cov_valid;
